@@ -1,66 +1,70 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const lastName = cookieStore.get("chat_name")?.value || "";
+  const lastRoom = cookieStore.get("chat_room")?.value || "";
+
+  // Already logged in from a previous visit — skip straight to the room
+  // instead of asking the user to confirm "Continue as ...".
+  if (lastName && lastRoom) {
+    redirect("/room");
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <table
+      width="100%"
+      cellPadding="6"
+      style={{ borderCollapse: "collapse" }}
+    >
+      <tbody>
+        <tr>
+          <td style={{ background: "#2c3e50", color: "#fff" }}>
+            <h2 style={{ margin: 0 }}>Chat Rooms</h2>
+          </td>
+        </tr>
+
+        <tr>
+          <td style={{ border: "1px solid #bbb" }}>
+            <form method="POST" action="/api/join">
+              <table cellPadding="4">
+                <tbody>
+                  <tr>
+                    <td>Your name:</td>
+                    <td>
+                      <input
+                        type="text"
+                        name="name"
+                        maxLength="20"
+                        defaultValue={lastName}
+                        required
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Room code:</td>
+                    <td>
+                      <input
+                        type="text"
+                        name="room"
+                        maxLength="20"
+                        defaultValue={lastRoom}
+                        required
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="2">
+                      <input type="submit" value="Join / Create room" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   );
 }
