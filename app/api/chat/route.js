@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMessagesSince, addMessage } from "../../../lib/db";
+import { sendChatPush } from "@/lib/firebase-admin";
 
 // Plain JSON API used by lightweight/non-browser clients (e.g. the J2ME
 // feature-phone app) that can't rely on cookies or HTML forms.
@@ -61,5 +62,7 @@ export async function POST(request) {
   }
 
   await addMessage(room, name, text);
+  // Fire-and-forget: don't block the response on the push send.
+  sendChatPush(room, name, text);
   return NextResponse.json({ ok: true });
 }

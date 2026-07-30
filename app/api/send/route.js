@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { addMessage } from "../../../lib/db";
 import { requestOrigin } from "@/lib/url";
+import { sendChatPush } from "@/lib/firebase-admin";
 
 export async function POST(request) {
   const form = await request.formData();
@@ -16,6 +17,8 @@ export async function POST(request) {
   }
   if (text) {
     await addMessage(room, name, text);
+    // Fire-and-forget: don't block the redirect on the push send.
+    sendChatPush(room, name, text);
   }
   return NextResponse.redirect(new URL("/room", origin), 303);
 }
