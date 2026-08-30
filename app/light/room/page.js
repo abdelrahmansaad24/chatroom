@@ -40,6 +40,7 @@ export default async function LightRoomPage({ searchParams }) {
   return (
     <div
       style={{
+        height: "80%",
         margin: "0",
         padding: "6px",
         fontFamily: "Arial, Helvetica, sans-serif",
@@ -97,84 +98,6 @@ export default async function LightRoomPage({ searchParams }) {
           </tr>
         </tbody>
       </table>
-
-      {/* Reply Status / Send Form */}
-      <div
-        style={{
-          backgroundColor: "#f4f6f9",
-          border: "1px solid #ccd0d5",
-          padding: "6px",
-          marginBottom: "8px",
-        }}
-      >
-        {replyName && replyText ? (
-          <div
-            style={{
-              backgroundColor: "#e8f4fd",
-              borderLeft: "3px solid #2980b9",
-              padding: "4px 6px",
-              marginBottom: "6px",
-              fontSize: "12px",
-            }}
-          >
-            Replying to <b style={{ color: colorForName(replyName) }}>{replyName}</b>: &ldquo;
-            {replyText.slice(0, 40)}
-            {replyText.length > 40 ? "..." : ""}&rdquo;{" "}
-            <a href="/light/room" style={{ color: "#c0392b", marginLeft: "6px" }}>
-              [Cancel Reply]
-            </a>
-          </div>
-        ) : null}
-
-        <form method="POST" action="/api/send" style={{ margin: 0 }}>
-          <input type="hidden" name="source" value="light" />
-          {replyName && replyText ? (
-            <>
-              <input type="hidden" name="replyToId" value={replyId} />
-              <input type="hidden" name="replyToName" value={replyName} />
-              <input type="hidden" name="replyToText" value={replyText} />
-            </>
-          ) : null}
-
-          <table width="100%" cellPadding="0" cellSpacing="0">
-            <tbody>
-              <tr>
-                <td>
-                  <input
-                    type="text"
-                    name="text"
-                    maxLength="500"
-                    placeholder={replyName ? `Reply to ${replyName}...` : "Write a message..."}
-                    autoFocus
-                    required
-                    style={{
-                      width: "98%",
-                      padding: "5px",
-                      fontSize: "13px",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </td>
-                <td width="70" align="right">
-                  <input
-                    type="submit"
-                    value="Send"
-                    style={{
-                      backgroundColor: "#27ae60",
-                      color: "#ffffff",
-                      border: "none",
-                      padding: "5px 12px",
-                      fontSize: "13px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                    }}
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </form>
-      </div>
 
       {/* Messages List Table */}
       <table
@@ -263,6 +186,83 @@ export default async function LightRoomPage({ searchParams }) {
           )}
         </tbody>
       </table>
+      {/* Reply Status / Send Form */}
+      <div
+        style={{
+          backgroundColor: "#f4f6f9",
+          border: "1px solid #ccd0d5",
+          padding: "6px",
+          marginBottom: "8px",
+        }}
+      >
+        {replyName && replyText ? (
+          <div
+            style={{
+              backgroundColor: "#e8f4fd",
+              borderLeft: "3px solid #2980b9",
+              padding: "4px 6px",
+              marginBottom: "6px",
+              fontSize: "12px",
+            }}
+          >
+            Replying to <b style={{ color: colorForName(replyName) }}>{replyName}</b>: &ldquo;
+            {replyText.slice(0, 40)}
+            {replyText.length > 40 ? "..." : ""}&rdquo;{" "}
+            <a href="/light/room" style={{ color: "#c0392b", marginLeft: "6px" }}>
+              [Cancel Reply]
+            </a>
+          </div>
+        ) : null}
+
+        <form method="POST" action="/api/send" style={{ margin: 0 }}>
+          <input type="hidden" name="source" value="light" />
+          {replyName && replyText ? (
+            <>
+              <input type="hidden" name="replyToId" value={replyId} />
+              <input type="hidden" name="replyToName" value={replyName} />
+              <input type="hidden" name="replyToText" value={replyText} />
+            </>
+          ) : null}
+
+          <table width="100%" cellPadding="0" cellSpacing="0">
+            <tbody>
+              <tr>
+                <td>
+                  <input
+                    type="text"
+                    name="text"
+                    maxLength="500"
+                    placeholder={replyName ? `Reply to ${replyName}...` : "Write a message..."}
+                    autoFocus
+                    required
+                    style={{
+                      width: "98%",
+                      padding: "5px",
+                      fontSize: "13px",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </td>
+                <td width="70" align="right">
+                  <input
+                    type="submit"
+                    value="Send"
+                    style={{
+                      backgroundColor: "#27ae60",
+                      color: "#ffffff",
+                      border: "none",
+                      padding: "5px 12px",
+                      fontSize: "13px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
 
       {/* Footer */}
       <div style={{ marginTop: "8px", fontSize: "11px", color: "#888", textAlign: "center" }}>
