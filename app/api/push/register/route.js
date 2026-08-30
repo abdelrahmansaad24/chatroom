@@ -4,15 +4,7 @@ import { saveFcmToken } from "@/lib/db";
 // Called by the client once it has an FCM device token, so the server
 // knows where to send push notifications for this room.
 export async function POST(request) {
-  const cookieStore = request.cookies;
-  const name = cookieStore.get("chat_name")?.value;
-  const room = cookieStore.get("chat_room")?.value;
-
-  if (!name || !room) {
-    return NextResponse.json({ error: "not joined" }, { status: 401 });
-  }
-
-  let body;
+  let body = {};
   try {
     body = await request.json();
   } catch {
@@ -22,6 +14,14 @@ export async function POST(request) {
   const token = String(body.token || "").trim();
   if (!token) {
     return NextResponse.json({ error: "token is required" }, { status: 400 });
+  }
+
+  const cookieStore = request.cookies;
+  const name = String(body.name || cookieStore.get("chat_name")?.value || "").trim();
+  const room = String(body.room || cookieStore.get("chat_room")?.value || "").trim();
+
+  if (!name || !room) {
+    return NextResponse.json({ error: "not joined" }, { status: 401 });
   }
 
   await saveFcmToken(room, name, token);

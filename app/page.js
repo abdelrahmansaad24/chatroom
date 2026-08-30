@@ -46,9 +46,9 @@ export default async function HomePage() {
                     <td>Room code:</td>
                     <td>
                       <input
-                        type="text"
+                        type="number"
                         name="room"
-                        maxLength="20"
+                        maxLength="4"
                         defaultValue={lastRoom}
                         required
                       />
