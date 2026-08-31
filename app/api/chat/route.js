@@ -74,7 +74,7 @@ export async function POST(request) {
 
   const messageDoc = await addMessage(room, name, text, replyTo);
   // Fire-and-forget: don't block response on push
-  sendChatPush(room, name, text, replyTo);
+  sendChatPush(room, name, text, replyTo, messageDoc);
 
   return NextResponse.json({
     ok: true,

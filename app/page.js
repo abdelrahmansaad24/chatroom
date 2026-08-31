@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import JoinForm from "./JoinForm";
 
 export default async function HomePage() {
   const cookieStore = await cookies();
@@ -27,41 +28,7 @@ export default async function HomePage() {
 
         <tr>
           <td style={{ border: "1px solid #bbb" }}>
-            <form method="POST" action="/api/join">
-              <table cellPadding="4">
-                <tbody>
-                  <tr>
-                    <td>Your name:</td>
-                    <td>
-                      <input
-                        type="text"
-                        name="name"
-                        maxLength="20"
-                        defaultValue={lastName}
-                        required
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Room code:</td>
-                    <td>
-                      <input
-                        type="number"
-                        name="room"
-                        maxLength="4"
-                        defaultValue={lastRoom}
-                        required
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan="2">
-                      <input type="submit" value="Join / Create room" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </form>
+            <JoinForm lastName={lastName} lastRoom={lastRoom} />
           </td>
         </tr>
       </tbody>

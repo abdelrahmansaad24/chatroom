@@ -111,6 +111,7 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
   const [reactions, setReactions] = useState({});
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [notifPermission, setNotifPermission] = useState("default");
+  const [dismissedNotifBanner, setDismissedNotifBanner] = useState(false);
 
   // Search in chat
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -177,13 +178,6 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
       isInitialScrollDone.current = true;
     }
   }, [scrollToBottom]);
-
-  // Check notification permission state on mount
-  useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setNotifPermission(Notification.permission);
-    }
-  }, []);
 
   // Append message
   const appendMessage = useCallback((msg) => {
@@ -292,33 +286,40 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
     }
   }, [handleIncomingMessage, name, room]);
 
+  // Notification permission check and prompt on mount
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      initFCM();
-    }
+    if (typeof window !== "undefined" && "Notification" in window) {
+      const currentPerm = Notification.permission;
+      setNotifPermission(currentPerm);
 
-    const onLeave = () => {
-      if (fcmTokenRef.current) {
-        navigator.sendBeacon?.(
-          "/api/push/unregister",
-          new Blob([JSON.stringify({ token: fcmTokenRef.current })], {
-            type: "application/json",
+      if (currentPerm === "granted") {
+        initFCM();
+      } else if (currentPerm === "default") {
+        // Attempt to prompt immediately on entering the room
+        requestNotificationPermission()
+          .then((perm) => {
+            setNotifPermission(perm);
+            if (perm === "granted") {
+              initFCM();
+            }
           })
-        );
+          .catch(() => {});
       }
-    };
-    window.addEventListener("beforeunload", onLeave);
-    return () => window.removeEventListener("beforeunload", onLeave);
+    }
   }, [initFCM]);
 
   const handleEnableNotifications = async () => {
-    const perm = await requestNotificationPermission();
-    setNotifPermission(perm);
-    if (perm === "granted") {
-      showToast("Notifications Enabled 🔔");
-      initFCM();
-    } else if (perm === "denied") {
-      showToast("Notifications Blocked in Browser 🚫");
+    try {
+      const perm = await requestNotificationPermission();
+      setNotifPermission(perm);
+      if (perm === "granted") {
+        showToast("Notifications Enabled 🔔");
+        await initFCM();
+      } else if (perm === "denied") {
+        showToast("Notifications Blocked in Browser 🚫");
+      }
+    } catch (e) {
+      console.error("[FCM] handleEnableNotifications error:", e);
     }
   };
 
@@ -672,17 +673,27 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
           </div>
         </div>
 
-        {/* Permission Request Alert Banner (One-tap on Android) */}
-        {notifPermission === "default" && (
+        {/* Permission Request Alert Banner */}
+        {notifPermission === "default" && !dismissedNotifBanner && (
           <div style={styles.notifBanner}>
-            <span>Get push notifications when someone replies?</span>
-            <button
-              type="button"
-              onClick={handleEnableNotifications}
-              style={styles.enableNotifBtn}
-            >
-              Enable 🔔
-            </button>
+            <span>🔔 Turn on notifications for new messages & replies?</span>
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={handleEnableNotifications}
+                style={styles.enableNotifBtn}
+              >
+                Enable 🔔
+              </button>
+              <button
+                type="button"
+                onClick={() => setDismissedNotifBanner(true)}
+                style={styles.dismissNotifBtn}
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
@@ -1532,6 +1543,16 @@ const styles = {
     borderRadius: "10px",
     fontSize: "0.74rem",
     fontWeight: "700",
+    cursor: "pointer",
+    touchAction: "manipulation",
+  },
+  dismissNotifBtn: {
+    backgroundColor: "transparent",
+    color: "#94a3b8",
+    border: "none",
+    padding: "4px 6px",
+    borderRadius: "6px",
+    fontSize: "0.8rem",
     cursor: "pointer",
     touchAction: "manipulation",
   },

@@ -2,23 +2,42 @@
 importScripts("https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/11.3.1/firebase-messaging-compat.js");
 
-let firebaseConfig = {};
+const defaultFirebaseConfig = {
+  apiKey: "AIzaSyC5YkBiuF-7RnyfzC_PfL8mq8dg9Vt8f5g",
+  authDomain: "chatroom-a5b94.firebaseapp.com",
+  projectId: "chatroom-a5b94",
+  storageBucket: "chatroom-a5b94.firebasestorage.app",
+  messagingSenderId: "29840204708",
+  appId: "1:29840204708:web:0c508ded1a8fe42bacd731",
+  measurementId: "G-2HT0Q0F45D",
+};
+
+let firebaseConfig = { ...defaultFirebaseConfig };
 try {
   const params = new URL(location.href).searchParams;
-  firebaseConfig = JSON.parse(params.get("config") || "{}");
+  const configParam = params.get("config");
+  if (configParam) {
+    const parsed = JSON.parse(configParam);
+    if (parsed && parsed.apiKey) {
+      firebaseConfig = { ...firebaseConfig, ...parsed };
+    }
+  }
 } catch {
-  firebaseConfig = {};
+  // Use defaultFirebaseConfig
 }
 
 if (firebaseConfig.apiKey) {
   try {
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     const messaging = firebase.messaging();
 
-    // Fires when a push arrives while the browser/tab is in the background
+    // Fires when an FCM push arrives while the browser/tab is in the background
     messaging.onBackgroundMessage((payload) => {
       const notification = payload.notification || {};
       const data = payload.data || {};
+
       let title = notification.title;
       if (!title) {
         if (data.isReplyToYou === "true") {
@@ -49,6 +68,46 @@ if (firebaseConfig.apiKey) {
     console.error("[SW] Firebase init error:", e);
   }
 }
+
+// Fallback native push event handler if FCM compat doesn't intercept
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  try {
+    const payload = event.data.json();
+    // If Firebase messaging already handled it or if it's a raw payload
+    const notification = payload.notification || {};
+    const data = payload.data || {};
+
+    if (!notification.title && !data.text && !data.name) return;
+
+    const title =
+      notification.title ||
+      (data.isReplyToYou === "true"
+        ? `💬 ${data.name || "Someone"} replied to your message`
+        : `💬 ${data.name || "New message"} in Room ${data.room || "Chat"}`);
+
+    const body = notification.body || data.text || "New message in chatroom";
+    const room = data.room || "chat";
+
+    event.waitUntil(
+      self.registration.showNotification(title, {
+        body,
+        icon: "/favicon.ico",
+        badge: "/favicon.ico",
+        vibrate: [200, 100, 200],
+        tag: `chatroom-${room}`,
+        renotify: true,
+        data: {
+          url: "/room",
+          room: data.room,
+          ...data,
+        },
+      })
+    );
+  } catch {
+    // Non-JSON or handled by Firebase SDK
+  }
+});
 
 // Android & Web notification click handler: Focuses existing room tab or opens new window
 self.addEventListener("notificationclick", (event) => {
