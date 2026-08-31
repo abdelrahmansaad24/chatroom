@@ -275,14 +275,18 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
 
       if (token) {
         fcmTokenRef.current = token;
-        await fetch("/api/push/register", {
+        const res = await fetch("/api/push/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token, room, name }),
         });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          console.warn("[FCM] /api/push/register failed:", res.status, json);
+        }
       }
-    } catch {
-      // ignore setup hiccups
+    } catch (err) {
+      console.error("[FCM] initFCM error:", err);
     }
   }, [handleIncomingMessage, name, room]);
 

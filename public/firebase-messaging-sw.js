@@ -2,6 +2,14 @@
 importScripts("https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/11.3.1/firebase-messaging-compat.js");
 
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 const defaultFirebaseConfig = {
   apiKey: "AIzaSyC5YkBiuF-7RnyfzC_PfL8mq8dg9Vt8f5g",
   authDomain: "chatroom-a5b94.firebaseapp.com",
