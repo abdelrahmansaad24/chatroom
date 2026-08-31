@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { addMessage } from "@/lib/db";
 import { requestOrigin } from "@/lib/url";
 import { sendChatPush } from "@/lib/firebase-admin";
+import { normalizeRoom } from "@/lib/room";
 
 export async function POST(request) {
   const cookieStore = await request.cookies;
-  const name = cookieStore.get("chat_name")?.value;
-  const room = cookieStore.get("chat_room")?.value;
+  const name = String(cookieStore.get("chat_name")?.value || "").trim();
+  const room = normalizeRoom(cookieStore.get("chat_room")?.value);
   const origin = requestOrigin(request);
   const referer = request.headers.get("referer") || "";
 

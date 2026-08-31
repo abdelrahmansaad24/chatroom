@@ -1,4 +1,5 @@
 import { getMessagesSince } from "@/lib/db";
+import { normalizeRoom } from "@/lib/room";
 
 // Server-Sent Events endpoint that pushes new chat messages to the browser
 // in real time, so JS-enabled clients don't have to wait for the 5s
@@ -10,7 +11,8 @@ const POLL_INTERVAL_MS = 1000;
 const HEARTBEAT_MS = 15000;
 
 export async function GET(request) {
-  const room = request.cookies.get("chat_room")?.value;
+  const rawRoom = request.cookies.get("chat_room")?.value;
+  const room = normalizeRoom(rawRoom);
 
   if (!room) {
     return new Response("missing room", { status: 400 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getMessagesSince, getMessagesBefore, getMessages, addMessage } from "@/lib/db";
 import { sendChatPush } from "@/lib/firebase-admin";
+import { normalizeRoom } from "@/lib/room";
 
 // Plain JSON API used by web client (infinite scroll / polling) and lightweight clients.
 //
@@ -12,7 +13,7 @@ import { sendChatPush } from "@/lib/firebase-admin";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const room = (searchParams.get("room") || "").trim().slice(0, 20);
+  const room = normalizeRoom(searchParams.get("room") || "");
   const sinceParam = searchParams.get("since");
   const beforeParam = searchParams.get("before");
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 10, 1), 50);
@@ -60,7 +61,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const room = String(body.room || "").trim().slice(0, 20);
+  const room = normalizeRoom(body.room || "");
   const name = String(body.name || "").trim().slice(0, 20);
   const text = String(body.text || "").trim().slice(0, 500);
   const replyTo = body.replyTo && typeof body.replyTo === "object" ? body.replyTo : null;

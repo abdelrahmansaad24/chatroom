@@ -47,11 +47,10 @@ export default async function LightHomePage() {
                         <input
                           type="text"
                           name="room"
-                          pattern="[0-9]{4}"
-                          maxLength="4"
-                          minLength="4"
+                          inputMode="numeric"
+                          maxLength="10"
                           defaultValue={lastRoom}
-                          placeholder="4 digits"
+                          placeholder="e.g. 1234"
                           required
                           style={{ width: "100%", padding: "4px" }}
                         />

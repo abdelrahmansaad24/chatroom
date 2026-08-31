@@ -37,10 +37,12 @@ export default function JoinForm({ lastName, lastRoom }) {
             <td>Room code:</td>
             <td>
               <input
-                type="number"
+                type="text"
                 name="room"
-                maxLength="4"
+                inputMode="numeric"
+                maxLength="10"
                 defaultValue={lastRoom}
+                placeholder="e.g. 1234"
                 required
               />
             </td>

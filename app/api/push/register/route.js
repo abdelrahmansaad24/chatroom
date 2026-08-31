@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveFcmToken } from "@/lib/db";
+import { normalizeRoom } from "@/lib/room";
 
 // Called by the client once it has an FCM device token, so the server
 // knows where to send push notifications for this room.
@@ -18,7 +19,7 @@ export async function POST(request) {
 
   const cookieStore = request.cookies;
   const name = String(body.name || cookieStore.get("chat_name")?.value || "").trim();
-  const room = String(body.room || cookieStore.get("chat_room")?.value || "").trim();
+  const room = normalizeRoom(body.room || cookieStore.get("chat_room")?.value);
 
   if (!name || !room) {
     return NextResponse.json({ error: "not joined" }, { status: 401 });
