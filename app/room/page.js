@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getMessages } from "@/lib/db";
 import { colorForName } from "@/lib/colors";
+import { normalizeRoom } from "@/lib/room";
 import ChatRoomClient from "./ChatRoomClient";
 
 export const dynamic = "force-dynamic";
@@ -9,11 +10,13 @@ export const dynamic = "force-dynamic";
 export default async function RoomPage() {
   const cookieStore = await cookies();
   const name = cookieStore.get("chat_name")?.value;
-  const room = cookieStore.get("chat_room")?.value;
+  const rawRoom = cookieStore.get("chat_room")?.value;
 
-  if (!name || !room) {
+  if (!name || !rawRoom) {
     redirect("/");
   }
+
+  const room = normalizeRoom(rawRoom);
 
   // Initial load fetches the last 10 messages
   const docs = await getMessages(room, 10);

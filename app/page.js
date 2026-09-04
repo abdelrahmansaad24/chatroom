@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { normalizeRoom } from "@/lib/room";
 import JoinForm from "./JoinForm";
 
 export default async function HomePage() {
   const cookieStore = await cookies();
   const lastName = cookieStore.get("chat_name")?.value || "";
-  const lastRoom = cookieStore.get("chat_room")?.value || "";
+  const rawLastRoom = cookieStore.get("chat_room")?.value || "";
+  const lastRoom = normalizeRoom(rawLastRoom);
 
   // Already logged in from a previous visit — skip straight to the room
   // instead of asking the user to confirm "Continue as ...".

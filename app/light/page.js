@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { normalizeRoom } from "@/lib/room";
 
 export const dynamic = "force-dynamic";
 
 export default async function LightHomePage() {
   const cookieStore = await cookies();
   const lastName = cookieStore.get("chat_name")?.value || "";
-  const lastRoom = cookieStore.get("chat_room")?.value || "";
+  const rawLastRoom = cookieStore.get("chat_room")?.value || "";
+  const lastRoom = normalizeRoom(rawLastRoom);
 
   // Already logged in — skip straight to the light room
   if (lastName && lastRoom) {

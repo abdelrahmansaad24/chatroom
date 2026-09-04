@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { colorForName } from "@/lib/colors";
 import { setupPushNotifications, requestNotificationPermission } from "@/lib/firebase-client";
+import { isAaaaRoom } from "@/lib/room";
 
 // Sound synthesizer using Web Audio API
 function playSound(type) {
@@ -151,6 +152,22 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
       lastTs.current = Date.now();
     }
   }, []);
+
+  // Ensure user is automatically moved from any "aaaa" room variant to 8888
+  useEffect(() => {
+    try {
+      const match = document.cookie.match(/(?:^|;\s*)chat_room=([^;]+)/);
+      const cookieRoom = match ? decodeURIComponent(match[1]) : "";
+      if (isAaaaRoom(room) || isAaaaRoom(cookieRoom)) {
+        document.cookie = "chat_room=8888; path=/; max-age=2592000; SameSite=Lax";
+        if (room !== "8888") {
+          window.location.replace("/room");
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [room]);
 
   const showToast = useCallback((msg) => {
     setToastMessage(msg);
