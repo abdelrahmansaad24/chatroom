@@ -103,6 +103,7 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
   const [replyTo, setReplyTo] = useState(null);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
   const [hasMoreOlder, setHasMoreOlder] = useState(initialMessages.length >= 10);
+  const [isSending, setIsSending] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [unreadBelowCount, setUnreadBelowCount] = useState(0);
   const [highlightedId, setHighlightedId] = useState(null);
@@ -512,8 +513,9 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
   const handleSendMessage = useCallback(
     async (overrideText) => {
       const text = (typeof overrideText === "string" ? overrideText : inputText).trim();
-      if (!text || isSendingRef.current) return;
+      if (!text || isSendingRef.current || isSending) return;
       isSendingRef.current = true;
+      setIsSending(true);
 
       const currentReplyTo = replyTo;
       setInputText("");
@@ -557,11 +559,12 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
         // keep optimistic message
       } finally {
         isSendingRef.current = false;
+        setIsSending(false);
       }
 
       inputRef.current?.focus();
     },
-    [inputText, name, replyTo, scrollToBottom, soundEnabled]
+    [inputText, isSending, name, replyTo, scrollToBottom, soundEnabled]
   );
 
   // Toggle reaction on a message
@@ -986,12 +989,12 @@ export default function ChatRoomClient({ room, name, initialMessages = [] }) {
 
           <button
             type="submit"
-            disabled={!inputText.trim()}
+            disabled={isSending || !inputText.trim()}
             style={{
               ...styles.sendBtn,
-              transform: inputText.trim() ? "scale(1)" : "scale(0.92)",
-              opacity: inputText.trim() ? 1 : 0.45,
-              background: inputText.trim()
+              transform: inputText.trim() && !isSending ? "scale(1)" : "scale(0.92)",
+              opacity: inputText.trim() && !isSending ? 1 : 0.45,
+              background: inputText.trim() && !isSending
                 ? "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)"
                 : "#334155",
             }}
